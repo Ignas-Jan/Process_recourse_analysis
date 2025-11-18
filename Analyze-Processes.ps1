@@ -15,15 +15,20 @@ $SystemProcesses = $SystemProcesses | ForEach-Object {
                    $memoryKB = [double]($_.MemUsage -replace '[",\sK]|', '')  # replaces "" , K and spaces into '' # double is used to convert to digit
                    $memoryMB = [math]::Round([double]$memoryKB / 1024, 2) # converts kilobytes to megabytes = 1MB is 1024 KB and is rounded to, to 2 digits after comma
 
-                    [PSCustomObject]@{
+                     [PSCustomObject]@{    # converting text outputs into powershell objects
                      ImageName = $_.ImageName   
                      PID = $_.PID
-                     SessionName = $_.SessionName
-                     Session = $_.Session
-                     MemUsage = $memoryMB}
-}
+                     MemUsage = $memoryMB
+                     }
+                   }
 
-#$SystemProcesses | Export-Csv Analyze-Processes # exports csv file but with no grouping or any other checks
+
+$filtered = $SystemProcesses| Where-Object {$_.MemUsage -gt $MemoryThresholdMB} #selects processes that has higher memory usage than the input
+$grouped = $filtered | Group-Object -Property ImageName #groups the processes by ImageName
+
+Write-Output $grouped
+
+
 
 
 
